@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+  />
+  <title>Daftar Buku</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #d9e4ec);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #555;
+    }
+
+    .list-group-item {
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: none;
+      background: #f9fbfd;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .list-group-item:hover {
+      transform: translateX(3px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-control {
+      border-radius: 8px;
+      box-shadow: none;
+    }
+
+    .btn {
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #4caf50, #81c784);
+      border: none;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #43a047, #66bb6a);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #ff9800, #ffc107);
+      border: none;
+    }
+
+    .btn-warning:hover {
+      background: linear-gradient(135deg, #fb8c00, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #f44336, #e57373);
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #d32f2f, #ef5350);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-secondary {
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Daftar Buku</h1>
+    <p>Ini Daftar Buku di Perpustakaan.</p>
+
+    <!-- Notifikasi -->
+    <div id="alert-container"></div>
+
+    <!-- Daftar tugas -->
+    <ul id="koleksi" class="list-group mb-4"></ul>
+
+    <!-- Form input -->
+    <div class="form-group">
+      <input type="text" id="judulInput" class="form-control" placeholder="Judul" />
+      <input type="number" id="judulId" class="form-control mt-2" placeholder="ID (untuk PUT/DELETE)" />
+    </div>
+
+    <!-- Tombol Aksi -->
+    <button class="btn btn-success" onclick="getPerpus()">GET</button>
+    <button class="btn btn-primary" onclick="postPerpus()">POST</button>
+    <button class="btn btn-warning" onclick="putPerpus()">PUT</button>
+    <button class="btn btn-danger" onclick="deletePerpus()">DELETE</button>
+    <a href="/" class="btn btn-secondary ml-2">Go to Home</a>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/perpus';
+
+    function showMessage(msg, type = 'success') {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.textContent = msg;
+      document.getElementById('alert-container').innerHTML = '';
+      document.getElementById('alert-container').appendChild(alertDiv);
+      setTimeout(() => alertDiv.remove(), 2000);
+    }
+
+    function getPerpus() {
+    fetch('/perpus')
+        .then(res => res.json())
+        .then(data => {
+        const list = document.getElementById('koleksi');
+        list.innerHTML = '';
+        data.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = `ID: ${item.id} Judul: ${item.judul}`;
+            list.appendChild(li);
+            });
+        });
+    }
+
+    function postPerpus() {
+        const judul = document.getElementById('judulInput').value.trim();
+        if (!judul) {
+            showMessage('Judul tidak boleh kosong!', 'danger');
+            return;
+        }
+
+        fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ judul: judul })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Gagal menambahkan buku');
+            return res.json();
+        })
+        .then(() => {
+            showMessage('Buku berhasil ditambahkan!', 'success');
+            document.getElementById('judulInput').value = '';
+            getPerpus();
+        })
+        .catch(err => showMessage(err.message, 'danger'));
+    }
+
+
+
+  function putPerpus() {
+    const id = document.getElementById('judulId').value.trim();
+    const judul = document.getElementById('judulInput').value.trim();
+
+    if (!id || !judul) {
+      showMessage('ID dan Judul wajib diisi!', 'danger');
+      return;
+    }
+
+    fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ judul: judul, completed: false })
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.text().then(err => { throw new Error(err); });
+      }
+      return res.json();
+    })
+    .then(() => {
+      showMessage('Buku berhasil diupdate!', 'success');
+      document.getElementById('judulInput').value = '';
+      document.getElementById('judulId').value = '';
+      getPerpus();
+    })
+    .catch(err => {
+      showMessage(err.message, 'danger');
+    });
+  }
+
+    function deletePerpus() {
+    const id = document.getElementById('judulId').value.trim();
+    if (!id) {
+        showMessage('ID harus diisi untuk menghapus!', 'danger');
+        return;
+    }
+    fetch(`/perpus/${id}`, { method: 'DELETE' })
+        .then(res => {
+        if (!res.ok) throw new Error('Gagal hapus');
+        getPerpus();
+        showMessage('Buku berhasil dihapus!', 'success');
+        document.getElementById('judulId').value = '';
+        document.getElementById('judulInput').value = '';
+        })
+        .catch(err => showMessage(err.message, 'danger'));
+    }
+
+    window.onload = getPerpus;
+  </script>
+</body>
+</html>
